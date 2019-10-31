@@ -14,6 +14,8 @@
 #define PULSE_COUNT_UNIT PCNT_UNIT_0
 
 #define ctrl_z GPIO_NUM_15
+#define UP GPIO_NUM_33
+#define DOWN GPIO_NUM_32
 
 int16_t theCounter = 0;
 
@@ -156,6 +158,8 @@ void setup() {
   initPulseCounter();
 
   pinMode(ctrl_z, INPUT_PULLUP);
+  pinMode(UP, INPUT_PULLUP);
+  pinMode(DOWN, INPUT_PULLUP);
 }
 
 
@@ -164,6 +168,8 @@ void loop() {
   pcnt_get_counter_value(PULSE_COUNT_UNIT, &thisCount);
 
   int ctrl_z_state = digitalRead(ctrl_z);
+  int up_state = digitalRead(UP);
+  int down_state = digitalRead(DOWN);
   
   if(thisCount > theCounter){
     theCounter = thisCount;
@@ -191,7 +197,7 @@ void loop() {
 
   if(ctrl_z_state == LOW){
     Serial.println("Ctrl Z");
-    if(connected = true){
+    if(connected == true){
       KEYMAP map = {0x1d, KEY_CTRL};
       uint8_t msg[] = {map.modifier, 0x0, map.usage, 0x0, 0x0, 0x0, 0x0, 0x0};
       input->setValue(msg, sizeof(msg));
@@ -200,7 +206,29 @@ void loop() {
     delay(100);
   }
 
-  if(thisCount == theCounter && ctrl_z_state == HIGH){
+  if(up_state == LOW){
+    Serial.println("UP");
+    if(connected == true){
+      KEYMAP map = {0x36, 0};
+      uint8_t msg[] = {map.modifier, 0x0, map.usage, 0x0, 0x0, 0x0 ,0x0 ,0x0};
+      input->setValue(msg, sizeof(msg));
+      input->notify();
+    }
+    delay(100);
+  }
+
+  if(down_state == LOW){
+    Serial.println("DOWN");
+    if(connected == true){
+      KEYMAP map = {0x37, 0};
+      uint8_t msg[] = {map.modifier, 0x0, map.usage, 0x0, 0x0, 0x0, 0x0, 0x0};
+      input->setValue(msg, sizeof(msg));
+      input->notify();
+    }
+    delay(100);
+  }
+
+  if(thisCount == theCounter && ctrl_z_state == HIGH && up_state == HIGH && down_state == HIGH){
     if(connected == true){
       uint8_t msg[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
       input->setValue(msg, sizeof(msg));
